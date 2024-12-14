@@ -47,7 +47,7 @@ Aura AI offers a wide range of functionalities, including but not limited to:
 1. **Clone the repository:**
    - You can clone this repository using:
      ```bash
-     git clone <repository_url>
+     git clone https://github.com/Hack3rAv/AuraAI.git
      ```
 
 2. **Install Dependencies:**
@@ -60,7 +60,7 @@ Aura AI offers a wide range of functionalities, including but not limited to:
 3. **Run the Application:**
    - Once everything is set up, run the application with:
      ```bash
-     python aura.py
+     python AuraAI.py
      ```
 
 ---
