@@ -7,12 +7,11 @@ import subprocess
 import socket
 import speech_recognition as sr
 from rich.console import Console
-import pyaudio
 import webbrowser
-import threading
 import speedtest
-import requests
 import whisper
+import requests  
+import webbrowser
 
 sys.stderr = open(os.devnull, 'w')
 
@@ -54,6 +53,12 @@ check_connection = [
     "check the internet speed",
 ]
 
+websearch_q = [
+    "search for",
+    "look up",
+    "search"
+]
+
 def say(text):
     """Text-to-Speech function."""
     engine.say(text)
@@ -88,21 +93,6 @@ def takeCommand():
             say(f"Sorry, I encountered an error: {e}")
             return None  
 
-def check_connection_speed():
-    st = speedtest.Speedtest()
-    
-    # Get the best server based on ping
-    st.get_best_server()
-    
-    # Measure download and upload speed
-    download_speed = st.download() / 1_000_000  # Convert from bits/sec to Mbps
-    upload_speed = st.upload() / 1_000_000  # Convert from bits/sec to Mbps
-    
-    # Measure ping
-    ping = st.results.ping
-    
-    return download_speed, upload_speed, ping
-
 def takeCommandOffline():
     """Take command using Whisper for offline speech recognition."""
     try:
@@ -127,6 +117,51 @@ def takeCommandOffline():
     except Exception as e:
         say(f"Sorry, I encountered an error: {e}")
         return None
+
+def web_search(query):
+    """Perform a web search on Google."""
+    try:
+        search_query = query.split("search for", 1)[1].strip()  # Extract the search term
+        say(f"Searching for {search_query}")
+        search_url = f"https://www.google.com/search?q={search_query}"
+        webbrowser.open(search_url)  # Open the search results in the default browser
+        say(f"Showing results for {search_query}")
+    except Exception as e:
+        say(f"Sorry, I couldn't perform the search. Error: {e}")
+
+def get_weather(city):
+    """Fetch weather information for the city."""
+    api_key = "bbe7ade5f540103d3c38a09f28beee65"  # Replace with your API key
+    base_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+    
+    try:
+        # Print the full URL for debugging
+       
+
+        response = requests.get(base_url)
+        
+        # Check if the response is valid
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Debug the data response
+           
+
+            if data.get("cod") == 200:
+                main = data["main"]
+                weather = data["weather"][0]
+                temp = main["temp"]
+                humidity = main["humidity"]
+                description = weather["description"]
+                weather_info = f"Temperature: {temp}°C, Humidity: {humidity}%, Description: {description.capitalize()}"
+                return weather_info
+            else:
+                return f"Sorry, I couldn't find weather information for {city}. Please check the city name."
+        else:
+            return f"Error: Unable to fetch data (Status code: {response.status_code})"
+
+    except Exception as e:
+        return f"Error: {e}"
 
 def aura(query):
     """AI query handler with memory."""
@@ -165,10 +200,6 @@ def open_and_wait(target):
         
         if platform.system() == "Windows":
             process = subprocess.Popen(target, shell=True)
-        elif platform.system() == "Darwin":  # macOS
-            process = subprocess.Popen(["open", target])
-        else:  # Linux
-            process = subprocess.Popen(["xdg-open", target])
 
         process.wait()  # Wait for the process to finish
         say(f"{app_name} closed successfully.")
@@ -188,18 +219,28 @@ def open_website(website):
     except Exception as e:
         say(f"Sorry, I couldn't open {website}. Error: {e}")
 
+def check_connection_speed():
+    st = speedtest.Speedtest()
+    
+    # Get the best server based on ping
+    st.get_best_server()
+    
+    # Measure download and upload speed
+    download_speed = st.download() / 1_000_000  # Convert from bits/sec to Mbps
+    upload_speed = st.upload() / 1_000_000  # Convert from bits/sec to Mbps
+    
+    # Measure ping
+    ping = st.results.ping
+    
+    return download_speed, upload_speed, ping
+
 def play_song(song_name, music_directory="C:\\Users\\HackerAV\\Music"):
     """Plays the song from the music directory."""
     song_path = os.path.join(music_directory, f"{song_name}.mp3")
     if os.path.exists(song_path):
         try:
             say(f"Playing {song_name}")
-            if platform.system() == "Windows":
-                subprocess.Popen(["start", song_path], shell=True)
-            elif platform.system() == "Darwin":  # macOS
-                subprocess.Popen(["open", song_path])
-            else:  # Linux
-                subprocess.Popen(["xdg-open", song_path])
+            subprocess.Popen(["start", song_path], shell=True)
             return f"Playing {song_name}"
         except Exception as e:
             say(f"Sorry, I encountered an error while playing {song_name}. Error: {e}")
@@ -271,32 +312,38 @@ if __name__ == '__main__':
             play_song(song_name) 
 
         elif any(phrase in query for phrase in time_q):
-            current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            color.print(f"[cyan]{current_time}[/cyan]")
+            current_time = datetime.datetime.now().strftime("%I:%M %p")
             say(f"The time is {current_time}")
-
+        
         elif any(phrase in query for phrase in shutdown_q):
-            say("The PC will shut down in 10 seconds")
+            say("Shutting down your PC in 10 seconds")
             os.system("shutdown /s /t 10")
         
         elif any(phrase in query for phrase in restart_q):
-            say("The PC will restart in 10 seconds")
+            say("Restarting your PC in 10 seconds")
             os.system("shutdown /r /t 10")
         
         elif any(phrase in query for phrase in internet):
             if check_internet():
-                say("The internet is connected")
+                say("You are connected to the internet")
             else:
-                say("The internet is not connected")
+                say("You are not connected to the internet")
         
         elif any(phrase in query for phrase in check_connection):
             download_speed, upload_speed, ping = check_connection_speed()
-            color.print(f"[cyan]Download Speed: {download_speed:.2f} Mbps, Upload Speed: {upload_speed:.2f} Mbps, Ping: {ping} ms[/cyan]")
-            say(f"Download Speed: {download_speed:.2f} Mbps, Upload Speed: {upload_speed:.2f} Mbps, Ping: {ping} ms")
+            color.print(f"[cyan]Download speed: {download_speed:.2f} Mbps[/cyan]")
+            color.print(f"[cyan]Upload speed: {upload_speed:.2f} Mbps[/cyan]")
+            color.print(f"[cyan]Ping: {ping} ms[/cyan]")
+            say(f"Download speed: {download_speed:.2f} Mbps, Upload speed: {upload_speed:.2f} Mbps, Ping: {ping} ms")
+        
+        elif "weather of" in query:
+            city = query.replace("weather of", "").strip()
+            weather_info = get_weather(city)
+            color.print(f"[cyan]{weather_info}[/cyan]")
+            say(weather_info)
+        
+        elif any(phrase in query for phrase in websearch_q):
+            web_search(query)
 
-        elif "what is your name" in query:
-            color.print("I am Aura" , style= "bold green")
-            say("I am Aura")
-
-        else:
-            aura(query)
+        elif query:
+            aura(query)  # Run Aura AI for any other query
