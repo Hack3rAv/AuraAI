@@ -117,6 +117,52 @@ def takeCommandOffline():
     except Exception as e:
         say(f"Sorry, I encountered an error: {e}")
         return None
+    
+
+
+
+def current_day_and_date():
+    today = datetime.datetime.now()
+    return today.strftime("Today is %A, %d %B %Y")
+
+def yesterday_and_tomorrow():
+    today = datetime.datetime.now()
+    yesterday = today - datetime.timedelta(days=1)
+    tomorrow = today + datetime.timedelta(days=1)
+    return (
+        yesterday.strftime("Yesterday was %A, %d %B %Y"),
+        tomorrow.strftime("Tomorrow will be %A, %d %B %Y"),
+    )
+
+def last_occurrence_of_day(day_name):
+    today = datetime.datetime.now()
+    day_name = day_name.capitalize()
+    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    if day_name not in days_of_week:
+        return f"'{day_name}' is not a valid day."
+    day_index = days_of_week.index(day_name)
+    days_back = (today.weekday() - day_index) % 7
+    last_day = today - datetime.timedelta(days=days_back)
+    return last_day.strftime(f"The last {day_name} was on %A, %d %B %Y.")
+
+def next_occurrence_of_day(day_name):
+    today = datetime.datetime.now()
+    day_name = day_name.capitalize()
+    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    if day_name not in days_of_week:
+        return f"'{day_name}' is not a valid day."
+    day_index = days_of_week.index(day_name)
+    days_forward = (day_index - today.weekday()) % 7
+    next_day = today + datetime.timedelta(days=days_forward)
+    return next_day.strftime(f"The next {day_name} is on %A, %d %B %Y.")
+
+def day_of_week_for_date(date_str):
+    try:
+        specific_date = datetime.datetime.strptime(date_str, "%d %B %Y")
+        return specific_date.strftime(f"The day on {date_str} is %A.")
+    except ValueError:
+        return "Invalid date format. Please use 'dd Month yyyy', e.g., '12 December 2024'."
+
 
 def web_search(query):
     """Perform a web search on Google."""
@@ -328,6 +374,39 @@ if __name__ == '__main__':
                 say("You are connected to the internet")
             else:
                 say("You are not connected to the internet")
+
+        if "what is today's date" in query:
+            result = current_day_and_date()
+            color.print(f"[cyan]{result}[/cyan]")
+            say(result)
+
+        elif "what is yesterday's date" in query or "what was yesterday" in query:
+            result, _ = yesterday_and_tomorrow()
+            color.print(f"[cyan]{result}[/cyan]")
+            say(result)
+
+        elif "what is tomorrow's date" in query or "what is tomorrow" in query:
+            _, result = yesterday_and_tomorrow()
+            color.print(f"[cyan]{result}[/cyan]")
+            say(result)
+
+        elif "what is the date of last" in query:
+            day_name = query.split("last")[-1].strip()
+            result = last_occurrence_of_day(day_name)
+            color.print(f"[cyan]{result}[/cyan]")
+            say(result)
+
+        elif "what is the date of next" in query:
+            day_name = query.split("next")[-1].strip()
+            result = next_occurrence_of_day(day_name)
+            color.print(f"[cyan]{result}[/cyan]")
+            say(result)
+
+        elif "what day is on" in query:
+            date_str = query.split("what day is")[-1].strip()
+            result = day_of_week_for_date(date_str)
+            color.print(f"[cyan]{result}[/cyan]")
+            say(result)
         
         elif any(phrase in query for phrase in check_connection):
             download_speed, upload_speed, ping = check_connection_speed()
