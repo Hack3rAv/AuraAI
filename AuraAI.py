@@ -108,9 +108,8 @@ def takeCommandOffline():
             with open(temp_path, "wb") as f:
                 f.write(audio.get_wav_data())
 
-            result = model.transcribe(temp_path, language="en")  # Specify language
-            os.remove(temp_path)  # Clean up temporary audio file
-
+            result = model.transcribe(temp_path, language="en")  
+            os.remove(temp_path)  
             query = result["text"]
             print(f"User said: {query}")
             return query.lower()
@@ -167,30 +166,30 @@ def day_of_week_for_date(date_str):
 def web_search(query):
     """Perform a web search on Google."""
     try:
-        search_query = query.split("search for", 1)[1].strip()  # Extract the search term
+        search_query = query.split("search for", 1)[1].strip()  
         say(f"Searching for {search_query}")
         search_url = f"https://www.google.com/search?q={search_query}"
-        webbrowser.open(search_url)  # Open the search results in the default browser
+        webbrowser.open(search_url) 
         say(f"Showing results for {search_query}")
     except Exception as e:
         say(f"Sorry, I couldn't perform the search. Error: {e}")
 
 def get_weather(city):
     """Fetch weather information for the city."""
-    api_key = "bbe7ade5f540103d3c38a09f28beee65"  # Replace with your API key
+    api_key = "bbe7ade5f540103d3c38a09f28beee65"  
     base_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
     
     try:
-        # Print the full URL for debugging
+       
        
 
         response = requests.get(base_url)
         
-        # Check if the response is valid
+       
         if response.status_code == 200:
             data = response.json()
             
-            # Debug the data response
+           
            
 
             if data.get("cod") == 200:
@@ -239,28 +238,28 @@ def aura(query):
 def open_and_wait(target):
     """Handles opening an app or file and waits for it to close."""
     try:
-        # Extract the app name from the 'apps' dictionary
+       
         app_name = [key for key, value in apps.items() if value == target][0].capitalize()
 
-        say(f"Opening {app_name}")  # Say just the app name (e.g., "Opening Word")
+        say(f"Opening {app_name}")  
         
         if platform.system() == "Windows":
             process = subprocess.Popen(target, shell=True)
 
-        process.wait()  # Wait for the process to finish
+        process.wait()  
         say(f"{app_name} closed successfully.")
-        return  # Prevent AI query handling after app closure
+        return  
     except Exception as e:
         say(f"Sorry, I couldn't open {target}. Error: {e}")
-        return  # Prevent AI query handling after an error
+        return 
 
 def open_website(website):
     """Opens the website in the default web browser."""
     try:
-        website_name = [key for key, value in websites.items() if value == website][0].capitalize()  # Get just the domain name (e.g., "YouTube")
+        website_name = [key for key, value in websites.items() if value == website][0].capitalize()  
 
-        say(f"Opening {website_name}")  # Say just the website name
-        webbrowser.open(website)  # Open the website in the default browser
+        say(f"Opening {website_name}")  
+        webbrowser.open(website)  
         say(f"{website_name} opened successfully.")
     except Exception as e:
         say(f"Sorry, I couldn't open {website}. Error: {e}")
@@ -268,14 +267,14 @@ def open_website(website):
 def check_connection_speed():
     st = speedtest.Speedtest()
     
-    # Get the best server based on ping
+   
     st.get_best_server()
     
-    # Measure download and upload speed
-    download_speed = st.download() / 1_000_000  # Convert from bits/sec to Mbps
-    upload_speed = st.upload() / 1_000_000  # Convert from bits/sec to Mbps
     
-    # Measure ping
+    download_speed = st.download() / 1_000_000 
+    upload_speed = st.upload() / 1_000_000 
+    
+   
     ping = st.results.ping
     
     return download_speed, upload_speed, ping
@@ -341,7 +340,7 @@ if __name__ == '__main__':
                 break
 
         if app_opened:
-            continue  # Skip AI query handling if an application was opened
+            continue  
 
         website_opened = False
         for website_name, website_url in websites.items():
@@ -351,7 +350,7 @@ if __name__ == '__main__':
                 break
 
         if website_opened:
-            continue  # Skip AI query handling if a website was opened
+            continue  
 
         if query.lower().startswith("play "):
             song_name = query[5:].strip()
@@ -425,4 +424,4 @@ if __name__ == '__main__':
             web_search(query)
 
         elif query:
-            aura(query)  # Run Aura AI for any other query
+            aura(query) 
