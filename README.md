@@ -8,6 +8,7 @@
 
 **Made by :** HackerAv Aka Avrodip Shee  
 **Contact :** [avrodipff@gmail.com](mailto:avrodipff@gmail.com)
+**ONly for windows**
 
 ---
 
